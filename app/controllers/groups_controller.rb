@@ -10,6 +10,7 @@ class GroupsController < ApplicationController
 
   def create
     @group = current_user.groups.new(group_params)
+    current_user.join!(@group)
     if @group.save
       redirect_to groups_path
     else
@@ -43,11 +44,37 @@ class GroupsController < ApplicationController
     redirect_to groups_path, alert: 'post deleted'
   end
 
+  def join
+    @group = Group.find(params[:id])
+
+    if !current_user.is_member_of?(@group)
+      current_user.join!(@group)
+      flash[:notice] = 'join success'
+    else
+      flash[:warning] = 'already joined!'
+    end
+
+    redirect_to group_path(@group)
+  end
+
+  def quit
+   @group = Group.find(params[:id])
+
+   if current_user.is_member_of?(@group)
+     current_user.quit!(@group)
+     flash[:alert] = "已退出本討論版！"
+   else
+     flash[:warning] = "你不是本討論版成員，怎麼退出 XD"
+   end
+
+   redirect_to group_path(@group)
+  end
+
 
 
   private
 
-  def group_params
-    params.require(:group).permit(:title, :description)
-  end
+    def group_params
+      params.require(:group).permit(:title, :description)
+    end
 end
