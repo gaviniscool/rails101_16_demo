@@ -10,6 +10,7 @@ class PostsController < ApplicationController
   def create
     # @group = Group.find(params[:group_id])
     @post = @group.posts.build(post_params)
+    @post.author = current_user
     # the way of delivering params to database seems different here
 
     if @post.save
@@ -21,12 +22,12 @@ class PostsController < ApplicationController
 
   def edit
     # @group = Group.find(params[:group_id])
-    @post = @group.posts.find(params[:id])
+    @post = current_user.posts.find(params[:id])
   end
 
   def update
     # @group = Group.find(params[:group_id])
-    @post = @group.posts.find(params[:id])
+    @post = current_user.posts.find(params[:id])
 
     if @post.update(post_params)
       redirect_to group_path(@group), notice: 'post modified!'
@@ -37,13 +38,17 @@ class PostsController < ApplicationController
 
   def destroy
     # @group = Group.find(params[:group_id])
-    @post = @group.posts.find(params[:id])
+    @post = current_user.posts.find(params[:id])
 
     @post.destroy
     redirect_to group_path(@group), alert: 'post deleted!'
   end
 
   private
+
+  def find_group
+    @group = Group.find(params[:group_id])
+  end
 
   def post_params
     params.require(:post).permit(:content)
